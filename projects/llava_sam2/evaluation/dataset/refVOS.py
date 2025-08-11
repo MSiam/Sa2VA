@@ -18,6 +18,7 @@ class RefVOSDataset(BaseEvalDataset):
                  image_folder,
                  expression_file,
                  mask_file,
+                 special_path=False
     ):
         super().__init__()
         vid2metaid, metas, mask_dict = self.json_file_preprocess(expression_file, mask_file)
@@ -27,6 +28,7 @@ class RefVOSDataset(BaseEvalDataset):
         self.text_data = metas
 
         self.image_folder = image_folder
+        self.special_path = special_path
 
     def __len__(self):
         return len(self.text_data)
@@ -73,10 +75,15 @@ class RefVOSDataset(BaseEvalDataset):
 
         video_id = video_obj_info['video']
         frames_files = video_obj_info['frames']
-        frames_files = [
-            os.path.join(self.image_folder,video_id, frame_file + ".jpg") for frame_file in frames_files
-        ]
-        
+        if self.special_path:
+            frames_files = [
+                os.path.join(self.image_folder, video_id, video_obj_info['exp_id'], frame_file + ".jpg") for frame_file in frames_files
+            ]
+        else:
+            frames_files = [
+                os.path.join(self.image_folder,video_id, frame_file + ".jpg") for frame_file in frames_files
+            ]
+
         images = []
         ori_width, ori_height = None, None
         for frame_idx, frame_path in enumerate(frames_files):
