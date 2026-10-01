@@ -114,9 +114,17 @@ data
 *.pkl
 *.pkl.json
 *.log.json
+work_dirs
 work_dirs/
+work_dirs_run
+work_dirs_run/
+pretrained
 pretrained/
 temp_*/
+OUTPUT/
+log*.txt
+DEV_README.md
+tmp_data/
 
 # Pytorch
 *.pth
@@ -126,3 +134,19 @@ temp_*/
 # srun
 *.out
 batchscript-*
+
+
+# local tools
+local_tools/
+outputs/
+
+logs/
+config.json
+quick_test_output/
+
+
+# Release
+projects/sa2va/tests/*
+
+workspace
+workspace/

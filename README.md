@@ -1,256 +1,90 @@
-# Sa2VA: Marrying SAM2 with LLaVA for Dense Grounded Understanding of Images and Videos
+# Pixel LLMs: Pixel-Level Grounded Understanding for Multimodal LLMs
 
-[\[🏠 Sa2VA\]](https://lxtgh.github.io/project/sa2va)  [\[📜 arXiv\]](https://arxiv.org/abs/2501.04001) [\[🤗 HuggingFace\]](https://huggingface.co/collections/ByteDance/sa2va-model-zoo-677e3084d71b5f108d00e093) [\[🎥 Introduction\]]() [\[🧑‍💻 GitHub\]](https://github.com/magic-research/Sa2VA) [\[Gradio Demo (Ours internal: Sa2VA-4B)\]](https://5512470799b6b35fbc.gradio.live/) [\[Gradio Demo (By HuggingFace Offical)\]](https://huggingface.co/spaces/fffiloni/Sa2VA-simple-demo) [\[🤖 Replicate Demo\]](https://replicate.com/bytedance)
+**Pixel LLMs** is a family of projects that bring pixel-level, dense grounded understanding to multimodal LLMs. It is anchored by **Sa2VA** — a unified model that marries SAM-2 with MLLMs for dense grounded understanding of images and videos — together with a growing set of research projects built on top of it.
 
+## 📊 Statistics
 
-[**Haobo Yuan**](https://yuanhaobo.me/)<sup>1*</sup> · [**Xiangtai Li**](https://lxtgh.github.io/)<sup>2*&dagger;</sup> · [**Tao Zhang**](https://zhang-tao-whu.github.io/)<sup>2,3*</sup> · [**Zilong Huang**](http://speedinghzl.github.io/)<sup>2</sup> · [**Shilin Xu**](https://xushilin1.github.io/)<sup>4</sup> ·[**Shunping Ji**](https://scholar.google.com/citations?user=FjoRmF4AAAAJ&hl=en)<sup>3</sup> ·[**Yunhai Tong**](https://scholar.google.com/citations?user=T4gqdPkAAAAJ&hl=zh-CN)<sup>4</sup> ·
+<a href="https://github.com/bytedance/Sa2VA">
+  <img src="https://repo-card.harboryuan.workers.dev/bytedance/Sa2VA.svg" alt="Sa2VA repo card" width="560">
+</a>
 
-[**Lu Qi**](https://luqi.info/)<sup>2</sup> · [**Jiashi Feng**](https://scholar.google.com/citations?user=Q8iay0gAAAAJ&hl=en)<sup>2</sup> · [**Ming-Hsuan Yang**](https://faculty.ucmerced.edu/mhyang/)<sup>1</sup>
+## Projects
 
-<sup>1</sup>UC Merced&emsp;&emsp;&emsp;&emsp;<sup>2</sup>ByteDance Seed&emsp;&emsp;&emsp;&emsp;<sup>3</sup>WHU&emsp;&emsp;&emsp;&emsp;<sup>4</sup>PKU
+### 🧠 [Sa2VA](./projects/sa2va/README.md) — Marrying SAM2 with MLLM (IEEE TPAMI 2026)
+*Haobo Yuan, Xiangtai Li, Tao Zhang, Yueyi Sun, Zilong Huang, Shilin Xu, Shunping Ji, Yunhai Tong, Lu Qi, Jiashi Feng, Ming-Hsuan Yang*
 
-&dagger; project lead&emsp;* The first three authors equally contribute to the work.
+The core unified model: SAM-2 + MLLM for referring segmentation, grounded conversation, visual prompting, and image/video chat. Supports InternVL2.5/3 and Qwen2.5-VL/Qwen3-VL backbones.
 
-![Teaser](assets/images/teaser.jpg)
+📂 [`projects/sa2va`](./projects/sa2va/README.md) · [📕 TPAMI](https://ieeexplore.ieee.org/document/11640960) · [📜 arXiv](https://arxiv.org/abs/2501.04001) · [🏠 Page](https://lxtgh.github.io/project/sa2va) · [🤗 Models](https://huggingface.co/collections/ByteDance/sa2va-model-zoo-677e3084d71b5f108d00e093)
 
+### 🔍 [VRT](./projects/vrt_sa2va/README.md) — Visual Reasoning Tracer
+*Haobo Yuan, Yueyi Sun, Yanwei Li, Tao Zhang, Xueqing Deng, Henghui Ding, Lu Qi, Anran Wang, Xiangtai Li, Ming-Hsuan Yang*
 
+Object-level grounded reasoning built on Sa2VA. Ships **VRT-Bench** (evaluation) and **VRT-80k** (training data).
 
-## News
+📂 [`projects/vrt_sa2va`](./projects/vrt_sa2va/README.md) · [📜 arXiv](https://arxiv.org/pdf/2512.05091) · [🏠 Page](https://harboryuan.github.io/visual-reasoning-tracer/) · [🤗 Data](https://huggingface.co/datasets/HarborYuan/VRT-Eval)
 
-- [x] Pixel-SAIL and Qwen-VL like models will be related before the end of July!!
+### 🧩 [SAMTok](./projects/samtok/README.md) — Representing Any Mask with Two Words (CVPR 2026)
+*Yikang Zhou, Tao Zhang, Dengxian Gong, Yuanzheng Wu, Ye Tian, Haochen Wang, Haobo Yuan, Jiacong Wang, Lu Qi, Hao Fei, Anran Wang, Zhuochen Wang, Yujing Wang, Cheng Chen, Shunping Ji, Xiangtai Li*
 
-- [x] Check out our recent works on pixel-LLM using one transformer, Pixel-SAIL[arxiv](https://arxiv.org/abs/2504.10465).
+A unified mask-token interface that lets any MLLM generate and understand masks.
 
-- [x] Sa2VA serves as the first and third solutions for 4th PVUW Workshop@CVPR 2025! [the first solution report](https://arxiv.org/pdf/2504.05178), [the third solution report](https://arxiv.org/abs/2504.00476).
-      
-- [x] We plan to release the Qwen-VL-based Sa2VA model for the next version! Please stay tuned!
+📂 [`projects/samtok`](./projects/samtok/README.md) · [📜 arXiv](https://arxiv.org/abs/2601.16093) · [🏠 Page](https://zhouyiks.github.io/projects/SAMTok/) · [🤗 Models](https://huggingface.co/collections/zhouyik/samtok)
 
+### Extensions
+- **[SaSaSa2VA](./projects/sasasa2va/README.md)** — a segmentation-augmented extension of Sa2VA that won **1st place** in the ICCV 2025 LSVOS Challenge RVOS Track 🏅.
+- **[Pixel-SAIL](./projects/pixel_sail/README.md)** — single-transformer pixel-level grounding.
 
-## Opensource progress
+## Environment
 
-- [ ] Release Pixel-SAIL models and code. (To be done)
-- [ ] Release Qwen-VL related models. (To be done)
-- [x] Release Open-sourced training datasets.
-- [x] Release Ref-SAM-v dataset.
-- [x] Release evaluation code for each dataset. 
-- [x] Release 1B,4B,8B, 26B model.
-- [x] Release training code for 1b, 4b, 8b model.
-- [x] Release inference and test code.
-- [x] Release demo code. 
-
-
-## Overview
-
-This repository contains the code for the paper "Sa2VA: Marrying SAM2 with LLaVA for Dense Grounded Understanding of Images and Videos".
-
-Sa2VA is the first unified model for the dense grounded understanding of both images and videos. Unlike existing multi-modal large language models, which are often limited to specific modalities and tasks, Sa2VA supports a wide range of image and video tasks, including referring segmentation and conversation, with minimal one-shot instruction tuning. Sa2VA combines SAM-2, a foundation video segmentation model, with LLaVA, an advanced vision-language model, and unifies text, image, and video into a shared LLM token space.
-
-
-## Model Zoo
-
-We provide the following models:
-| Model Name |                             Base MLLM                             |                                 Language Part                                 |                       HF Link                        |
-|:----------:|:-----------------------------------------------------------------:|:-----------------------------------------------------------------------------:|:----------------------------------------------------:|
-|  Sa2VA-1B  | [InternVL2.0-1B](https://huggingface.co/OpenGVLab/InternVL2-1B) |   [Qwen2-0.5B-Instruct](https://huggingface.co/Qwen/Qwen2-0.5B-Instruct)    | [🤗 link](https://huggingface.co/ByteDance/Sa2VA-1B) |
-|  Sa2VA-4B  | [InternVL2.5-4B](https://huggingface.co/OpenGVLab/InternVL2_5-4B) |    [Qwen2.5-3B-Instruct](https://huggingface.co/Qwen/Qwen2.5-3B-Instruct)     | [🤗 link](https://huggingface.co/ByteDance/Sa2VA-4B) |
-|  Sa2VA-8B  | [InternVL2.5-8B](https://huggingface.co/OpenGVLab/InternVL2_5-8B) |  [internlm2_5-7b-chat](https://huggingface.co/internlm/internlm2_5-7b-chat)   | [🤗 link](https://huggingface.co/ByteDance/Sa2VA-8B) |
-|  Sa2VA-26B | [InternVL2.5-26B](https://huggingface.co/OpenGVLab/InternVL2_5-26B) |  [internlm2_5-20b-chat](https://huggingface.co/internlm/internlm2_5-20b-chat)   | [🤗 link](https://huggingface.co/ByteDance/Sa2VA-26B) |
-
-## 🤗 Gradio Demos
-
-We provide a script that implements interactive chat using gradio, which requires installing `gradio==4.42.0`. You can try it to build a local chat interface quickly.
-```shell
-PYTHONPATH=. python projects/llava_sam2/gradio/app.py ByteDance/Sa2VA-4B
-```
-
-## 🚀 Quick Start
-
-Our Sa2VA model is available on 🤗HuggingFace. With very few steps, you can try it with your own data. You can install the `demo/requirements.txt` to avoid training-only packages.
-
-
-**Option1 - scripts:**
-
-Supposing you have a folder (`PATH_TO_FOLDER`) that contains images of a video, you can use the following script to chat with the Sa2VA model or segment the objects in the videos.
-
+We manage dependencies with [`uv`](https://docs.astral.sh/uv/). Install it once:
 ```bash
-> cd scripts
-> python demo/demo.py PATH_TO_FOLDER --model_path ByteDance/Sa2VA-8B --work-dir OUTPUT_DIR --text "<image>Please describe the video content."
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-If the output contains the segmentation results, the results will be saved to `OUTPUT_DIR`.
-
-**Option2 - Jupter Notebook:**
-
-Please refer to `demo.ipynb`.
-
-## 🎥 Demo
-
-<details open>
-<summary>Demo 1</summary>
-Input Video (Source: La La Land 2016):
-
-![Error](assets/videos/exp_1.gif)
-
-Instruction: "Please segment the girl wearing the yellow dress."
-</details>
-
-<details open>
-<summary>Demo 2</summary>
-Input Video (Source: La La Land 2016):
-
-![Error](assets/videos/exp_2.gif)
-
-Instruction: "Please segment the main character."
-</details>
-
-
-<details open>
-<summary>Demo 3</summary>
-Input Video (Source: Internet):
-
-![Error](assets/videos/apt_exp_1_all.gif)
-
-Instruction: "Please segment the person wearing sun glasses."
-</details>
-
-
-<details open>
-<summary>Demo 4</summary>
-Input Video (Source: Internet):
-
-![Error](assets/videos/apt_exp_2_all.gif)
-
-Instruction: "Instruction: "Please segment the singing girl."
-</details>
-
-<details open>
-<summary>Demo 5</summary>
-Input Video:
-
-![Error](assets/videos/gf_exp1.gif)
-
-Instruction: "What is the atmosphere of the scene?"
-
-Answer: "The scene has a dark and mysterious atmosphere, with the men dressed in suits and ties, and the dimly lit room."
-</details>
-
-
-## Training
-<details open>
-<summary>Installation</summary>
-
-1. Please install the python and pytorch first:
+The environment is defined under [`projects/sa2va`](./projects/sa2va) (`pyproject.toml` + `uv.lock`) and shared across the projects. The quickest way to set it up — with the virtualenv placed in `/tmp` and symlinked back into the project — is the helper script at the repo root:
 ```bash
-> conda create -n vlm python=3.10
-> conda activate vlm
-> conda install pytorch==2.3.1 torchvision==0.18.1 pytorch-cuda=12.1 cuda -c pytorch  -c "nvidia/label/cuda-12.1.0" -c "nvidia/label/cuda-12.1.1"
+bash setup_env.sh                 # projects/sa2va, --extra=latest
+# bash setup_env.sh sa2va legacy  # InternVL2.5 or earlier
 ```
-
-2. Install mmcv, we use 2.1.0 as default version:
+Or do it manually:
 ```bash
-> pip install mmcv==2.1.0 -f https://download.openmmlab.com/mmcv/dist/cu121/torch2.3/index.html
+cd projects/sa2va
+uv sync --extra=latest            # or --extra=legacy
 ```
+Then run training / evaluation from the repository root with the environment activated (`source projects/sa2va/.venv/bin/activate`). See each project's README for project-specific steps.
 
-3. Install other dependencies:
+For tokens / API keys (HuggingFace, OpenRouter), copy the template and fill it in — `setup_env.sh` loads it automatically:
 ```bash
-> pip install -r requirements.txt
-```
-</details>
-
-Please make sure using the correct versions of transformers and peft.
-
-<
-<summary>Pretrained Model Preparation</summary>
-
-You are expected to download the following pretrained models and place them in the `./pretrained` directory:
-- [sam2_hiera_large.pt](https://huggingface.co/facebook/sam2-hiera-large)
-- [InternVL2_5-4B](https://huggingface.co/OpenGVLab/InternVL2_5-4B)
-
-You can download the remaining models from InternVL2.5 [huggingface collections](https://huggingface.co/collections/OpenGVLab/internvl25-673e1019b66e2218f68d7c1c). 
-
-```
-./ # project root
-pretrained/
-├── sam2_hiera_large.pt
-├── InternVL2_5-1B
-├── InternVL2_5-4B
+cp .env.example .env   # then edit .env
 ```
 
+Why `uv`? It treats the environment as code: dependencies are declared in `pyproject.toml` and every transitive package is version-locked in `uv.lock`. The result is a single source of truth that is fully reproducible across machines, trivial to maintain, and recreated exactly with one `uv sync` — no manual `pip install` drift.
 
-<details open>
-<summary>Data Preparation</summary>
+## Citation
 
-Please download the training datasets and place them in the `data` directory. The download link is [here](https://huggingface.co/datasets/Dense-World/Sa2VA-Training).
+If you find this repository useful, please consider citing the relevant papers:
 
-Please directly put the zip files into the `data` directory and unzip them. For example, you can download the `video_datas_mevis.zip` and unzip it in the `data` directory like:
-```bash
-> unzip video_datas_mevis.zip
-```
+```bibtex
+@article{sa2va,
+  title={Sa2VA: Marrying SAM2 with MLLM for Dense Grounded Understanding of Images and Videos},
+  author={Yuan, Haobo and Li, Xiangtai and Zhang, Tao and Sun, Yueyi and Huang, Zilong and Xu, Shilin and Ji, Shunping and Tong, Yunhai and Qi, Lu and Feng, Jiashi and Yang, Ming-Hsuan},
+  journal={IEEE TPAMI},
+  year={2026}
+}
 
-The final data structure should be like:
-```
-data/
-├── video_datas
-|   ├── revos
-|   ├── mevis
-|   └── davis17
-|   └── chat_univi # video-chat data
-|   └── sam_v_full # please download this from sam-2 offical repp.
-|   └── sam_v_final_v3.json
-├── ref_seg
-|   ├── refclef
-|   ├── refcoco
-|   ├── refcoco+
-|   ├── refcocog
-|   ├── 
-├── glamm_data
-|   ├── images
-|   ├── annotations
-├── osprey-724k
-|   ├── Osprey-724K
-|   ├── coco
-├── llava_data
-|   ├── llava_images
-|   ├── LLaVA-Instruct-150K
-|   ├── LLaVA-Pretrain
-
-```
-`sam_v_full` is the SA-V dataset, which is not included in the download link. You can download it from [here](https://ai.meta.com/datasets/segment-anything-video/).
-</details>
-
-<details open>
-<summary>Training Script</summary>
-
-Please run the following script to train using 8 GPUS, we suggest using at least 8 A100 GPUs:
-```bash
-> bash tools/dist.sh train projects/llava_sam2/configs/sa2va_4b.py 8
-```
-</details>
-
-<details open>
-<summary>Convert trained model to huggingface format</summary>
-
-Please run the following script to convert:
-```bash
-> python projects/llava_sam2/hf/convert_to_hf.py projects/llava_sam2/configs/sa2va_4b.py --pth-model PATH_TO_PTH_MODEL --save-path PATH_TO_SAVE_FOLDER
-```
-</details>
-
-
-## References
-If you find this repository useful, please consider referring to the following paper:
-```
-@article{pixel_sail,
-  title={Pixel-SAIL: Single Transformer For Pixel-Grounded Understanding},
-  author={Zhang, Tao and Li, Xiangtai and Huang, Zilong  and Li, Yanwei and Lei, Weixian and Deng, Xueqing and Chen, Shihao and Ji, Shunping and  and Feng, Jiashi},
-  journal={arXiv},
+@article{yuan2025vrt,
+  title={Visual Reasoning Tracer: Object-Level Grounded Reasoning Benchmark},
+  author={Yuan, Haobo and Sun, Yueyi and Li, Yanwei and Zhang, Tao and Deng, Xueqing and Ding, Henghui and Qi, Lu and Wang, Anran and Li, Xiangtai and Yang, Ming-Hsuan},
+  journal={arXiv pre-print},
   year={2025}
 }
 
-@article{sa2va,
-  title={Sa2VA: Marrying SAM2 with LLaVA for Dense Grounded Understanding of Images and Videos},
-  author={Yuan, Haobo and Li, Xiangtai and Zhang, Tao and Huang, Zilong and Xu, Shilin and Ji, Shunping and Tong, Yunhai and Qi, Lu and Feng, Jiashi and Yang, Ming-Hsuan},
-  journal={arXiv},
-  year={2025}
+@inproceedings{zhou2026samtok,
+  title={SAMTok: Representing Any Mask with Two Words},
+  author={Zhou, Yikang and Zhang, Tao and Gong, Dengxian and Wu, Yuanzheng and Tian, Ye and Wang, Haochen and Yuan, Haobo and Wang, Jiacong and Qi, Lu and Fei, Hao and Wang, Anran and Wang, Zhuochen and Wang, Yujing and Chen, Cheng and Ji, Shunping and Li, Xiangtai},
+  booktitle={CVPR},
+  address={Denver, CO, USA},
+  year={2026}
 }
 ```
