@@ -1,4 +1,5 @@
 from xtuner.tools.train import main as train
+import projects.llava_sam2.hooks.visualization_hook
 try:
     import torch
     import torch_npu
