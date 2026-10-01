@@ -55,12 +55,15 @@ def main():
         with patch_fileio():
             state_dict = guess_load_checkpoint(args.pth_model)
     else:
-        state_dict = guess_load_checkpoint(args.pth_model)
+        #state_dict = guess_load_checkpoint(args.pth_model)
+        state_dict = torch.load(args.pth_model, weights_only=False)
+        if 'state_dict' in state_dict:
+            state_dict = state_dict['state_dict']
 
     model.load_state_dict(state_dict, strict=False)
     print(f'Load PTH model from {args.pth_model}')
-
     model._merge_lora()
+
     model.mllm.transfer_to_hf = True
 
     all_state_dict = model.all_state_dict()
@@ -73,6 +76,7 @@ def main():
         for _text in name_map.keys():
             new_key = new_key.replace(_text, name_map[_text])
         all_state_dict_new[new_key] = all_state_dict[key]
+    print('after modified all_state_dict')
 
     # build the hf format model
     from projects.llava_sam2.hf.models.configuration_sa2va_chat import Sa2VAChatConfig
@@ -96,6 +100,8 @@ def main():
     )
     hf_sa2va_model.load_state_dict(all_state_dict_new)
 
+    print('saving')
+    hf_sa2va_model = hf_sa2va_model.to("cuda")
     hf_sa2va_model.save_pretrained(args.save_path)
     model.tokenizer.save_pretrained(args.save_path)
     print(f"Save the hf model into {args.save_path}")

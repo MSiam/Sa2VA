@@ -278,7 +278,8 @@ class InternVisionEncoder(nn.Module):
             if self.gradient_checkpointing and self.training:
                 layer_outputs = torch.utils.checkpoint.checkpoint(
                     encoder_layer,
-                    hidden_states)
+                    hidden_states,
+                    use_reentrant=False)
             else:
                 layer_outputs = encoder_layer(
                     hidden_states,
@@ -325,6 +326,10 @@ class InternVisionModel(PreTrainedModel):
 
     def forward(
             self,
+            input_ids=None, # Not used Only to Match Peft format for Lora
+            attention_mask=None, # Not used Only to Match Peft format for Lora
+            inputs_embeds=None, # Not used Only to Match Peft format for Lora
+            output_attentions=None, # Not used Only to Match Peft format for Lora
             pixel_values: Optional[torch.FloatTensor] = None,
             output_hidden_states: Optional[bool] = None,
             return_dict: Optional[bool] = None,

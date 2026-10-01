@@ -1,5 +1,6 @@
 from typing import Literal
 
+import copy
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -16,6 +17,8 @@ from transformers import GenerationConfig
 from projects.llava_sam2.models.preprocess.image_resize import DirectResize
 
 import numpy as np
+import pickle
+import lzma
 
 from .internvl import InternVL_Slowfast
 from .utils import dynamic_preprocess
@@ -27,6 +30,7 @@ from pycocotools import mask as _mask
 
 from types import MethodType
 
+from transformers import AutoModel
 from xtuner.model.utils import guess_load_checkpoint
 
 from mmcv.ops import point_sample
@@ -135,9 +139,36 @@ class VideoLLaVASAMModel(LisaModel):
         self.torch_dtype = torch_dtype
 
         if pretrained_pth is not None:
-            pretrained_state_dict = guess_load_checkpoint(pretrained_pth)
-            self.load_state_dict(pretrained_state_dict, strict=False)
-            print(f'Load pretrained weight from {pretrained_pth}')
+#            self = AutoModel.from_pretrained(pretrained_pth,trust_remote_code=True)
+            if pretrained_pth == "Same Path":
+                # MLLM Base Model loaded the whole pretrained Sa2VA model, copy all the weights back to the full Sa2VA model
+                grounding_enc_weights = self.mllm.model.grounding_encoder.state_dict()
+                grounding_enc_weights["sam2_model.memory_encoder.fuser.layers.0.gamma"] = grounding_enc_weights["sam2_model.memory_encoder.fuser.layers.0.g_weight"]
+                grounding_enc_weights["sam2_model.memory_encoder.fuser.layers.1.gamma"] = grounding_enc_weights["sam2_model.memory_encoder.fuser.layers.1.g_weight"]
+                del grounding_enc_weights["sam2_model.memory_encoder.fuser.layers.0.g_weight"]
+                del grounding_enc_weights["sam2_model.memory_encoder.fuser.layers.1.g_weight"]
+                self.grounding_encoder.load_state_dict(grounding_enc_weights)
+                self.text_hidden_fcs.load_state_dict(self.mllm.model.text_hidden_fcs.state_dict())
+                # Disable the training of the grounding encoder inside the MLLM that was only there to copy its weights
+                self.mllm.model.grounding_encoder.requires_grad_(False)
+                self.mllm.model.grounding_encoder = None
+            else:
+                # load all other parameters from the original model, then replace the new one only
+                grounding_enc_weights = self.mllm.model.grounding_encoder.state_dict()
+                grounding_enc_weights["sam2_model.memory_encoder.fuser.layers.0.gamma"] = grounding_enc_weights["sam2_model.memory_encoder.fuser.layers.0.g_weight"]
+                grounding_enc_weights["sam2_model.memory_encoder.fuser.layers.1.gamma"] = grounding_enc_weights["sam2_model.memory_encoder.fuser.layers.1.g_weight"]
+                del grounding_enc_weights["sam2_model.memory_encoder.fuser.layers.0.g_weight"]
+                del grounding_enc_weights["sam2_model.memory_encoder.fuser.layers.1.g_weight"]
+                self.grounding_encoder.load_state_dict(grounding_enc_weights)
+                self.text_hidden_fcs.load_state_dict(self.mllm.model.text_hidden_fcs.state_dict())
+                # Disable the training of the grounding encoder inside the MLLM that was only there to copy its weights
+                self.mllm.model.grounding_encoder.requires_grad_(False)
+                self.mllm.model.grounding_encoder = None
+
+                # replace the new ones only
+                pretrained_state_dict = guess_load_checkpoint(pretrained_pth)
+                self.load_state_dict(pretrained_state_dict, strict=False)
+                print(f'Load pretrained weight from {pretrained_pth}')
 
         self.loss_sample_points = loss_sample_points
         self.num_points = num_points
@@ -159,6 +190,7 @@ class VideoLLaVASAMModel(LisaModel):
             self.preprocessor = BUILDER.build(preprocessor)
 
         self.bs = bs
+
 
     def _merge_lora(self):
         # print('pre merge lora: ', self.mllm.model.language_model.base_model.model.get_input_embeddings().weight.shape)
@@ -220,7 +252,6 @@ class VideoLLaVASAMModel(LisaModel):
             to_return.update(
                 get_peft_model_state_dict(
                     self.mllm.model.vision_model, state_dict=state_dict))
-            raise NotImplementedError
         elif not self.mllm.freeze_visual_encoder:
             to_return.update({
                 k: v
@@ -273,6 +304,12 @@ class VideoLLaVASAMModel(LisaModel):
         to_return.update(
             {k: v
              for k, v in state_dict.items() if 'embed_tokens.weight' in k or 'tok_embeddings' in k})
+        to_return.update(
+            {k: v
+             for k, v in state_dict.items() if 'track_mlp' in k})
+        to_return.update(
+            {k: v
+             for k, v in state_dict.items() if 'video_track_att' in k})
         return to_return
 
     def check_obj_number(self, pred_embeddings_list_video, gt_masks_video, fix_number=5):
@@ -780,6 +817,7 @@ class VideoLLaVASAMModel_zero3(VideoLLaVASAMModel):
             arch_type=arch_type,
         )
         self.bs = bs
+        self.all_logging_vars = None
 
     def _get_pesudo_data(self, dtype, device):
         g_pixel_values = torch.zeros((3, 1024, 1024), dtype=dtype, device=device)
@@ -791,6 +829,8 @@ class VideoLLaVASAMModel_zero3(VideoLLaVASAMModel):
 
     def forward(self, data, data_samples=None, mode='loss'):
         g_pixel_values = data.pop('g_pixel_values', None)
+        orig_imgs = F.interpolate(torch.stack(g_pixel_values, dim=0), (256,256)).cpu()
+
         gt_masks = data.pop('masks', None)
         frames_per_batch = data.pop('frames_per_batch', None)
         input_ids = data['input_ids']
@@ -798,6 +838,8 @@ class VideoLLaVASAMModel_zero3(VideoLLaVASAMModel):
             output = self.mllm(data, data_samples, mode, fast_token_idx=self.fast_token_idx)
         else:
             output = self.mllm(data, data_samples, mode)
+        exprs = self.tokenizer.batch_decode(input_ids, skip_special_tokens=True, clean_up_tokenization_spaces=True)[0].split('user')
+        exprs = [e for e in exprs if e != '']
 
         if gt_masks is None:
             # require zero seg datas
@@ -861,7 +903,22 @@ class VideoLLaVASAMModel_zero3(VideoLLaVASAMModel):
         gt_masks = torch.cat(gt_masks, dim=0)
         pred_masks = pred_masks.flatten(0, 1)
         # pred_masks = torch.cat(pred_masks, dim=0)
+        if mode == 'predict':
+            # TODO: Fix id to video id + exp_id
+            out_dict = [{'gt_masks': gt_masks, 'pred_masks': pred_masks, 'id': -1}]
+            orig_imgs_llm = data['pixel_values'][0].cpu()
 
+            # For DEBUGGING purposes only
+            self.all_logging_vars = {
+                'expr': exprs,
+                'imgs': orig_imgs,
+                'imgs_llm': orig_imgs_llm,
+                'masks': gt_masks.view(num_frames, num_objs, *gt_masks.shape[1:]).cpu(),
+                'preds': pred_masks.detach().view(num_frames, num_objs, *pred_masks.shape[1:]).cpu()
+            }
+
+
+            return out_dict
 
         bs = len(pred_masks)
         loss_mask, loss_dice = 0, 0
@@ -900,4 +957,15 @@ class VideoLLaVASAMModel_zero3(VideoLLaVASAMModel):
             'loss_dice': loss_dice,
             'llm_loss': output.loss,
         }
+
+        orig_imgs_llm = data['pixel_values'][0].cpu()
+
+        self.all_logging_vars = {
+            'expr': exprs,
+            'imgs': orig_imgs,
+            'imgs_llm': orig_imgs_llm,
+            'masks': gt_masks.view(num_frames, num_objs, *gt_masks.shape[1:]).cpu(),
+            'preds': pred_masks.detach().view(num_frames, num_objs, *pred_masks.shape[1:]).cpu()
+        }
+
         return loss_dict

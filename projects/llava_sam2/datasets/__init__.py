@@ -1,5 +1,6 @@
 from .collect_fns import video_lisa_collate_fn
 from .MeVIS_Dataset import VideoMeVISDataset
+from .MoCentric_Dataset import VideoMoCentricDataset
 from .ReVOS_Dataset import VideoReVOSDataset
 from .RefYoutubeVOS_Dataset import VideoRefYoutubeVOSDataset
 from .encode_fn import video_lisa_encode_fn
