@@ -54,15 +54,15 @@ def main():
         with patch_fileio():
             state_dict = guess_load_checkpoint(args.pth_model)
     else:
-        state_dict = guess_load_checkpoint(args.pth_model)
+        #state_dict = guess_load_checkpoint(args.pth_model)
+        state_dict = torch.load(args.pth_model, weights_only=False)
+        if 'state_dict' in state_dict:
+            state_dict = state_dict['state_dict']
 
     model.load_state_dict(state_dict, strict=False)
     print(f'Load PTH model from {args.pth_model}')
-
-    iter_str = os.path.basename(args.pth_model).split('.')[0]
-
     model._merge_lora()
-    model.mllm.model.language_model.modules_to_save = None
+
     model.mllm.transfer_to_hf = True
 
     all_state_dict = model.all_state_dict()
@@ -75,6 +75,7 @@ def main():
         for _text in name_map.keys():
             new_key = new_key.replace(_text, name_map[_text])
         all_state_dict_new[new_key] = all_state_dict[key]
+    print('after modified all_state_dict')
 
     # build the hf format model
     from projects.sasasa2va.hf.models.configuration_sasasa2va_chat import SaSaSa2VAChatConfig
@@ -102,8 +103,10 @@ def main():
     if args.save_path is None:
         args.save_path = f"./{os.path.dirname(args.pth_model)}_{iter_str}_hf"
 
-    hf_sasasa2va_model.save_pretrained(args.save_path)
-    model.mllm.tokenizer.save_pretrained(args.save_path)
+    print('saving')
+    hf_sa2va_model = hf_sa2va_model.to("cuda")
+    hf_sa2va_model.save_pretrained(args.save_path)
+    model.tokenizer.save_pretrained(args.save_path)
     print(f"Save the hf model into {args.save_path}")
 
     # copy the files
